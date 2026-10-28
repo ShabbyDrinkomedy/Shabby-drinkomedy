@@ -3,17 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shabby Drinkomedy - Ordina dal Posto</title>
+<title>Shabby Drinkomedy</title>
 <style>
 body{background:#0e0e0e;color:#fff;font-family:system-ui;max-width:520px;margin:0 auto;padding:20px}
 h1{color:#7CFC00;text-align:center}
 .card{background:#1a1a1a;border-radius:16px;padding:18px;border:1px solid #2a2a2a}
 label{display:block;margin:14px 0 6px;font-weight:700}
-input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#111;color:#fff;font-size:16px;box-sizing:border-box}
+input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#111;color:#fff;font-size:16px;box-sizing:border-box}
 .btn{width:100%;margin-top:18px;background:#7CFC00;color:#000;font-weight:900;padding:16px;border-radius:12px;border:0;font-size:18px;cursor:pointer}
-.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.menu button{background:#222;border:1px solid #333;color:#fff;padding:12px;border-radius:10px;cursor:pointer}
-.menu button.active{background:#7CFC00;color:#000;font-weight:900}
 .ok{background:#0f2a0f;color:#7CFC00;padding:12px;border-radius:10px;margin-top:14px;display:none;text-align:center}
 .err{background:#2a0f0f;color:#ff8a8a;padding:12px;border-radius:10px;margin-top:14px;display:none;text-align:center}
 </style>
@@ -21,64 +18,48 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #333;
 <body>
 <h1>🍹 Shabby Drinkomedy</h1>
 <div class="card">
-<label>POSTO * e nome (facoltativo) - es: 12 Mario</label>
-<input id="posto" type="text" placeholder="Es: 12 - SOLO NOME NON VA" required>
-<label>Seleziona drink *</label>
-<div class="menu" id="menu">
-<button data-v="Spritz Aperol">Spritz Aperol</button>
-<button data-v="Spritz Campari">Spritz Campari</button>
-<button data-v="Negroni">Negroni</button>
-<button data-v="Americano">Americano</button>
-<button data-v="Gin Tonic">Gin Tonic</button>
-<button data-v="Mojito">Mojito</button>
-<button data-v="Birra Artigianale">Birra</button>
-<button data-v="Calice Vino">Calice Vino</button>
-</div>
-<label>Note / Altro</label>
+<label>POSTO * e nome (facoltativo)</label>
+<input id="posto" type="text" placeholder="Es: 12 Mario" required>
+
+<label>Cosa vuoi ordinare? *</label>
+<select id="drink">
+<option value="">-- Seleziona --</option>
+<option>Spritz Aperol</option>
+<option>Spritz Campari</option>
+<option>Negroni</option>
+<option>Americano</option>
+<option>Gin Tonic</option>
+<option>Mojito</option>
+<option>Birra Artigianale</option>
+<option>Calice Vino</option>
+<option>Altro (scrivi nelle note)</option>
+</select>
+
+<label>Note</label>
 <textarea id="note" rows="3" placeholder="Es: poco ghiaccio..."></textarea>
-<button class="btn" id="invia" onclick="inviaOrdine()">INVIA ORDINE 🚀</button>
-<div id="ok" class="ok">✅ Ordine inviato! Arriva al bar!</div>
+
+<button class="btn" onclick="inviaOrdine()">INVIA ORDINE 🚀</button>
+<div id="ok" class="ok">✅ Ordine inviato!</div>
 <div id="err" class="err"></div>
 </div>
 <script>
 const BOT_TOKEN = "9138005946:AAHgns6AfCGpe4Ud-KY4baxhuWc2egf8C8I";
 const CHAT_ID = "-1004443351538";
-let selezionati = new Set();
-document.querySelectorAll('#menu button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    b.classList.toggle('active');
-    if(b.classList.contains('active')) selezionati.add(b.dataset.v);
-    else selezionati.delete(b.dataset.v);
-  });
-});
 async function inviaOrdine(){
-  const postoEl = document.getElementById('posto');
-  const posto = postoEl.value.trim();
-  const note = document.getElementById('note').value.trim();
-  const ok = document.getElementById('ok');
-  const err = document.getElementById('err');
+  const posto=document.getElementById('posto').value.trim();
+  const drink=document.getElementById('drink').value;
+  const note=document.getElementById('note').value.trim();
+  const ok=document.getElementById('ok');
+  const err=document.getElementById('err');
   ok.style.display='none'; err.style.display='none';
-  if(!posto){ err.textContent='⚠️ Scrivi il POSTO! Es: 12 o 12 Mario'; err.style.display='block'; return; }
-  if(/^[A-Za-z ]+$/.test(posto)){ err.textContent='⚠️ SOLO NOME NON VA - scrivi il numero!'; err.style.display='block'; return; }
-  if(selezionati.size===0 && !note){ err.textContent='⚠️ Scegli un drink'; err.style.display='block'; return; }
-  const drinkList = Array.from(selezionati).join(', ') || '(vedi note)';
-  const msg = `🍹 NUOVO ORDINE\n\n📍 POSTO: ${posto}\n🥂 ORDINE: ${drinkList}\n📝 NOTE: ${note || '-'}\n\n⏰ ${new Date().toLocaleString('it-IT')}`;
-  const btn = document.getElementById('invia');
-  btn.disabled=true; btn.textContent='Invio...';
+  if(!posto){err.textContent='⚠️ Inserisci il numero del posto, es: 12';err.style.display='block';return;}
+  if(/^[A-Za-z ]+$/.test(posto)){err.textContent='⚠️ Inserisci il numero del posto, es: 12';err.style.display='block';return;}
+  if(!drink){err.textContent='⚠️ Seleziona cosa vuoi ordinare';err.style.display='block';return;}
+  const msg=`🍹 NUOVO ORDINE\n\n📍 POSTO: ${posto}\n🥂 ORDINE: ${drink}\n📝 NOTE: ${note||'-'}\n\n⏰ ${new Date().toLocaleString('it-IT')}`;
   try{
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({chat_id: CHAT_ID, text: msg})
-    });
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text:msg})});
     ok.style.display='block';
-    selezionati.clear();
-    document.querySelectorAll('#menu button.active').forEach(b=>b.classList.remove('active'));
-    document.getElementById('note').value='';
-  }catch(e){
-    err.textContent='❌ Errore, riprova'; err.style.display='block';
-  }finally{
-    btn.disabled=false; btn.textContent='INVIA ORDINE 🚀';
-  }
+  }catch(e){err.textContent='❌ Errore, riprova';err.style.display='block';}
 }
 </script>
 </body>
