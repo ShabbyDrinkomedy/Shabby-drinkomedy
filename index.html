@@ -1,16 +1,85 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shabby DrinKomedy - Ordine</title>
-<style>body{font-family:sans-serif;background:#111;color:#fff;padding:15px;margin:0}.card{background:#222;padding:20px;border-radius:15px;max-width:500px;margin:auto}h1{text-align:center;color:#00ff88}label{display:block;margin-top:15px;font-weight:bold;color:#ccc}select,input,textarea{width:100%;padding:14px;border-radius:10px;border:none;margin-top:6px;box-sizing:border-box;font-size:16px}textarea{min-height:70px}button{background:#00ff88;color:#000;border:none;padding:16px;width:100%;border-radius:12px;font-weight:bold;margin-top:20px;font-size:18px}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shabby Drinkomedy - Ordina dal Posto</title>
+<style>
+body{background:#0e0e0e;color:#fff;font-family:system-ui;max-width:520px;margin:0 auto;padding:20px}
+h1{color:#7CFC00;text-align:center}
+.card{background:#1a1a1a;border-radius:16px;padding:18px;border:1px solid #2a2a2a}
+label{display:block;margin:14px 0 6px;font-weight:700}
+input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#111;color:#fff;font-size:16px;box-sizing:border-box}
+.btn{width:100%;margin-top:18px;background:#7CFC00;color:#000;font-weight:900;padding:16px;border-radius:12px;border:0;font-size:18px;cursor:pointer}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.menu button{background:#222;border:1px solid #333;color:#fff;padding:12px;border-radius:10px;cursor:pointer}
+.menu button.active{background:#7CFC00;color:#000;font-weight:900}
+.ok{background:#0f2a0f;color:#7CFC00;padding:12px;border-radius:10px;margin-top:14px;display:none;text-align:center}
+.err{background:#2a0f0f;color:#ff8a8a;padding:12px;border-radius:10px;margin-top:14px;display:none;text-align:center}
+</style>
 </head>
-<body><h1>🍺 Shabby DrinKomedy</h1><div class="card">
-<label>📍 POSTO * e nome (facoltativo)</label><input id="posto" type="text" placeholder="Es: 12 o 12 Mario - SOLO NOME NON VALE">
-<label>🍹 Cosa vuoi ordinare?</label><select id="drink"><option value="">-- Scegli --</option><option value="Articolo bar generico">Articolo bar - generico</option><option value="Pinta bionda">Pinta bionda</option><option value="Mezza pinta bionda">Mezza pinta bionda</option><option value="Pinta rossa">Pinta rossa</option><option value="Mezza pinta rossa">Mezza pinta rossa</option><option value="IPA 33CL">IPA 33CL</option><option value="Birra in bottiglia">Birra in bottiglia</option><option value="Gin Tonic">Gin Tonic</option><option value="Gin Lemon">Gin Lemon</option><option value="Spritz Aperol">Spritz Aperol</option><option value="Spritz Campari">Spritz Campari</option><option value="Spritz generico">Spritz generico</option><option value="Calice vino rosso">Calice vino rosso</option><option value="Calice vino bianco">Calice vino bianco</option><option value="Calice vino rosé">Calice vino rosé</option><option value="Acqua">Acqua</option><option value="Bibita">Bibita</option></select>
-<label>📝 Note</label><textarea id="note" placeholder="Es: Hendricks, Negroni..."></textarea>
-<button onclick="invia()">INVIA ORDINE 🚀</button><p id="msg" style="text-align:center;margin-top:15px"></p></div>
+<body>
+<h1>🍹 Shabby Drinkomedy</h1>
+<div class="card">
+<label>POSTO * e nome (facoltativo) - es: 12 Mario</label>
+<input id="posto" type="text" placeholder="Es: 12 - SOLO NOME NON VA" required>
+<label>Seleziona drink *</label>
+<div class="menu" id="menu">
+<button data-v="Spritz Aperol">Spritz Aperol</button>
+<button data-v="Spritz Campari">Spritz Campari</button>
+<button data-v="Negroni">Negroni</button>
+<button data-v="Americano">Americano</button>
+<button data-v="Gin Tonic">Gin Tonic</button>
+<button data-v="Mojito">Mojito</button>
+<button data-v="Birra Artigianale">Birra</button>
+<button data-v="Calice Vino">Calice Vino</button>
+</div>
+<label>Note / Altro</label>
+<textarea id="note" rows="3" placeholder="Es: poco ghiaccio..."></textarea>
+<button class="btn" id="invia" onclick="inviaOrdine()">INVIA ORDINE 🚀</button>
+<div id="ok" class="ok">✅ Ordine inviato! Arriva al bar!</div>
+<div id="err" class="err"></div>
+</div>
 <script>
-const BOT_TOKEN="9138005946:AAFvdZjsBuBR5FnhBtfSs_wxh88BGxDcSEk";const CHAT_ID="-1004443351538";
-function invia(){const posto=document.getElementById('posto').value.trim();const drink=document.getElementById('drink').value;const note=document.getElementById('note').value.trim();if(!posto){alert("Devi inserire il posto!");return}if(!/\d/.test(posto)){alert("Devi inserire il NUMERO del posto! Esempio: 12 oppure 12 Mario. Solo il nome NON basta.");return}if(!drink){alert("Scegli cosa ordinare!");return}let testo=`🔔 NUOVO ORDINE\n🪑 Posto: ${posto}\n🍹 Ordine: ${drink}`;if(note)testo+=`\n📝 Note: ${note}`;document.getElementById('msg').textContent="✅ Ordine inviato al bar!";const url=`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(testo)}`;fetch(url,{mode:'no-cors'}).catch(()=>{});const img=new Image();img.src=url;}
-</script></body></html>
+const BOT_TOKEN = "9138005946:AAHgns6AfCGpe4Ud-KY4baxhuWc2egf8C8I";
+const CHAT_ID = "-1004443351538";
+let selezionati = new Set();
+document.querySelectorAll('#menu button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    b.classList.toggle('active');
+    if(b.classList.contains('active')) selezionati.add(b.dataset.v);
+    else selezionati.delete(b.dataset.v);
+  });
+});
+async function inviaOrdine(){
+  const postoEl = document.getElementById('posto');
+  const posto = postoEl.value.trim();
+  const note = document.getElementById('note').value.trim();
+  const ok = document.getElementById('ok');
+  const err = document.getElementById('err');
+  ok.style.display='none'; err.style.display='none';
+  if(!posto){ err.textContent='⚠️ Scrivi il POSTO! Es: 12 o 12 Mario'; err.style.display='block'; return; }
+  if(/^[A-Za-z ]+$/.test(posto)){ err.textContent='⚠️ SOLO NOME NON VA - scrivi il numero!'; err.style.display='block'; return; }
+  if(selezionati.size===0 && !note){ err.textContent='⚠️ Scegli un drink'; err.style.display='block'; return; }
+  const drinkList = Array.from(selezionati).join(', ') || '(vedi note)';
+  const msg = `🍹 NUOVO ORDINE\n\n📍 POSTO: ${posto}\n🥂 ORDINE: ${drinkList}\n📝 NOTE: ${note || '-'}\n\n⏰ ${new Date().toLocaleString('it-IT')}`;
+  const btn = document.getElementById('invia');
+  btn.disabled=true; btn.textContent='Invio...';
+  try{
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({chat_id: CHAT_ID, text: msg})
+    });
+    ok.style.display='block';
+    selezionati.clear();
+    document.querySelectorAll('#menu button.active').forEach(b=>b.classList.remove('active'));
+    document.getElementById('note').value='';
+  }catch(e){
+    err.textContent='❌ Errore, riprova'; err.style.display='block';
+  }finally{
+    btn.disabled=false; btn.textContent='INVIA ORDINE 🚀';
+  }
+}
+</script>
+</body>
+</html>
