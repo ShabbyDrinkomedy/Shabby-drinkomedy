@@ -3,68 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drinkomedy - Ordini</title>
+<title>Drinkomedy - Ordina</title>
 <style>
-body{font-family:sans-serif;background:#111;color:#fff;padding:20px;max-width:500px;margin:auto}
-h1{text-align:center;color:#ffcc00}
-.card{background:#222;padding:15px;border-radius:12px;margin-bottom:12px}
-input,button{width:100%;padding:12px;border-radius:8px;border:none;margin-top:8px;font-size:16px}
-button{background:#ffcc00;font-weight:bold;cursor:pointer}
-.item{display:flex;justify-content:space-between;align-items:center;margin:8px 0}
-.item button{width:40px}
+body{font-family:sans-serif;background:#111;color:#fff;padding:18px;max-width:480px;margin:auto}
+h1{text-align:center;color:#ffcc00;margin-bottom:20px}
+.card{background:#222;padding:16px;border-radius:12px;margin-bottom:14px}
+label{display:block;margin-top:10px;font-size:14px;color:#ccc}
+input,select,textarea{width:100%;padding:12px;border-radius:8px;border:none;margin-top:6px;font-size:16px;box-sizing:border-box}
+textarea{resize:vertical}
+button{width:100%;padding:14px;border-radius:10px;border:none;background:#ffcc00;font-weight:bold;font-size:18px;margin-top:18px;cursor:pointer}
+#stato{text-align:center;margin-top:12px}
+.req{color:#ff3b3b}
 </style>
 </head>
 <body>
-<h1>🍺 Drinkomedy Cilento</h1>
+<h1>🍺 Drinkomedy</h1>
 
 <div class="card">
-<label>Tavolo / Nome Cliente</label>
-<input id="tavolo" placeholder="Es. Tavolo 5 o Mario">
-</div>
+<label>Numero Posto <span class="req">*</span></label>
+<input id="posto" type="number" placeholder="Es. 12" required>
 
-<div class="card">
-<label>Articolo bar generico (scrivi tu)</label>
-<input id="generico" placeholder="Es. 2 spritz, 1 caffè">
-</div>
+<label>Prodotto <span class="req">*</span></label>
+<select id="prodotto" required>
+<option value="" disabled selected>Scegli un prodotto</option>
+<option>Articolo bar generico (scrivi tu nelle note)</option>
+<option>Pinta Bionda</option>
+<option>Pinta Rossa</option>
+<option>Pinta Bianca / Weiss</option>
+<option>Calice Vino</option>
+<option>Spritz</option>
+<option>Cocktail</option>
+<option>Panino</option>
+<option>Patatine</option>
+</select>
 
-<div class="card" id="lista">
-<h3>Birre alla spina</h3>
-<div class="item"><span>Pinta Bionda</span><div><button onclick="chg('bionda',-1)">-</button><span id="bionda">0</span><button onclick="chg('bionda',1)">+</button></div></div>
-<div class="item"><span>Pinta Rossa</span><div><button onclick="chg('rossa',-1)">-</button><span id="rossa">0</span><button onclick="chg('rossa',1)">+</button></div></div>
-<div class="item"><span>Pinta Bianca</span><div><button onclick="chg('bianca',-1)">-</button><span id="bianca">0</span><button onclick="chg('bianca',1)">+</button></div></div>
-</div>
+<label>Quantità</label>
+<select id="qta">
+<option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+</select>
 
-<div class="card">
-<button onclick="invia()">INVIA ORDINE SU TELEGRAM</button>
-<p id="stato" style="text-align:center;margin-top:10px"></p>
+<label>Note</label>
+<textarea id="note" rows="3" placeholder="Es. senza ghiaccio, ben cotta..."></textarea>
+
+<button onclick="invia()">INVIA ORDINE</button>
+<p id="stato"></p>
 </div>
 
 <script>
 const TOKEN="9138005946:AAH73KjnovdpkiTY7l2vlTa5hOh3me11Ui0";
 const CHAT_ID="-1004443351538";
-let q={bionda:0,rossa:0,bianca:0};
-function chg(k,d){q[k]=Math.max(0,q[k]+d);document.getElementById(k).innerText=q[k]}
+
 async function invia(){
- let tavolo=document.getElementById('tavolo').value||'Non specificato';
- let gen=document.getElementById('generico').value||'';
- let msg=`🍺 NUOVO ORDINE DRINKOMEDY\n\n📍 ${tavolo}\n`;
- if(gen) msg+=`📝 Generico: ${gen}\n`;
- msg+=`\n---\n`;
- if(q.bionda>0) msg+=`Pinta Bionda: ${q.bionda}\n`;
- if(q.rossa>0) msg+=`Pinta Rossa: ${q.rossa}\n`;
- if(q.bianca>0) msg+=`Pinta Bianca: ${q.bianca}\n`;
- if(q.bionda+q.rossa+q.bianca==0 && !gen){alert('Aggiungi qualcosa!');return}
- document.getElementById('stato').innerText='Invio in corso...';
- try{
-  let res=await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`,{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({chat_id:CHAT_ID,text:msg})
-  });
-  let data=await res.json();
-  if(data.ok){document.getElementById('stato').innerText='✅ Ordine inviato su Telegram!'; q={bionda:0,rossa:0,bianca:0};['bionda','rossa','bianca'].forEach(k=>document.getElementById(k).innerText=0)}
-  else{document.getElementById('stato').innerText='Errore: '+JSON.stringify(data)}
- }catch(e){document.getElementById('stato').innerText='Errore di rete'}
+  const posto=document.getElementById('posto').value.trim();
+  const prodotto=document.getElementById('prodotto').value;
+  const qta=document.getElementById('qta').value;
+  const note=document.getElementById('note').value.trim();
+  const stato=document.getElementById('stato');
+
+  if(!posto){alert('Inserisci il numero del posto, è obbligatorio');return}
+  if(!prodotto){alert('Scegli un prodotto');return}
+
+  let msg=`🔔 NUOVO ORDINE\n\n📍 Posto: ${posto}\n📦 ${qta}x ${prodotto}`;
+  if(note) msg+=`\n📝 Note: ${note}`;
+  msg+=`\n⏰ ${new Date().toLocaleTimeString()}`;
+
+  stato.innerText='Invio...';
+  try{
+    const r=await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:CHAT_ID,text:msg})
+    });
+    const d=await r.json();
+    if(d.ok){
+      stato.innerText='✅ Ordine inviato!';
+      document.getElementById('note').value='';
+    }else{stato.innerText='Errore invio';}
+  }catch(e){stato.innerText='Errore di rete';}
 }
 </script>
 </body>
