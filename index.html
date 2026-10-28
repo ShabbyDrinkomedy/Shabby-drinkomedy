@@ -1,3 +1,24 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shabby Drinkomedy - Cassa</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#111;color:#fff;padding:20px;max-width:500px;margin:auto}
+h1{text-align:center}
+label{display:block;margin-top:15px;font-weight:bold}
+select,input,textarea,button{width:100%;padding:12px;margin-top:5px;border-radius:8px;border:none;font-size:16px;box-sizing:border-box}
+button{background:#ffcc00;color:#000;font-weight:bold;margin-top:20px;cursor:pointer}
+button:active{transform:scale(0.98)}
+#lista{margin-top:20px;background:#222;padding:15px;border-radius:10px}
+.riga{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #333}
+</style>
+</head>
+<body>
+<h1>Shabby Drinkomedy</h1>
+
+<label>Prodotto</label>
 <select id="item-select" required>
   <option value="">-- Seleziona --</option>
   <option selected>articolo bar generico (scrivi tu)</option>
@@ -18,3 +39,38 @@
   <option>Spritz (nelle note scrivi il gusto)</option>
   <option>Negroni</option>
 </select>
+
+<label>Quantità</label>
+<input type="number" id="qty" value="1" min="1">
+
+<label>Note</label>
+<textarea id="note" placeholder="Scrivi qui i dettagli..."></textarea>
+
+<button onclick="aggiungi()">Aggiungi</button>
+
+<div id="lista"></div>
+<button onclick="inviaWhatsApp()" style="background:#25D366">Invia ordine su WhatsApp</button>
+
+<script>
+let ordine = [];
+function aggiungi(){
+  const prod = document.getElementById('item-select').value;
+  const qty = document.getElementById('qty').value;
+  const note = document.getElementById('note').value;
+  if(!prod){alert('Seleziona un prodotto');return;}
+  ordine.push({prod,qty,note});
+  mostra();
+  document.getElementById('note').value='';
+}
+function mostra(){
+  const div = document.getElementById('lista');
+  div.innerHTML = '<b>Ordine:</b><br>' + ordine.map((o,i)=>`<div class="riga"><span>${o.qty}x ${o.prod} ${o.note? '('+o.note+')':''}</span><span onclick="ordine.splice(${i},1);mostra()" style="color:red">X</span></div>`).join('');
+}
+function inviaWhatsApp(){
+  if(ordine.length==0){alert('Ordine vuoto');return;}
+  let testo = 'ORDINE SHABBY:%0A' + ordine.map(o=>`-${o.qty}x ${o.prod} ${o.note? '('+o.note+')':''}`).join('%0A');
+  window.open('https://wa.me/?text='+testo,'_blank');
+}
+</script>
+</body>
+</html>
