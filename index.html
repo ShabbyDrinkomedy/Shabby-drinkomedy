@@ -3,73 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shabby Drinkomedy - Cassa</title>
+<title>Drinkomedy - Ordini</title>
 <style>
-body{font-family:system-ui,sans-serif;background:#111;color:#fff;padding:20px;max-width:500px;margin:auto}
-h1{text-align:center}
-label{display:block;margin-top:15px;font-weight:bold}
-select,input,textarea,button{width:100%;padding:12px;margin-top:5px;border-radius:8px;border:none;font-size:16px;box-sizing:border-box}
-button{background:#ffcc00;color:#000;font-weight:bold;margin-top:20px;cursor:pointer}
-button:active{transform:scale(0.98)}
-#lista{margin-top:20px;background:#222;padding:15px;border-radius:10px}
-.riga{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #333}
+body{font-family:sans-serif;background:#111;color:#fff;padding:20px;max-width:500px;margin:auto}
+h1{text-align:center;color:#ffcc00}
+.card{background:#222;padding:15px;border-radius:12px;margin-bottom:12px}
+input,button{width:100%;padding:12px;border-radius:8px;border:none;margin-top:8px;font-size:16px}
+button{background:#ffcc00;font-weight:bold;cursor:pointer}
+.item{display:flex;justify-content:space-between;align-items:center;margin:8px 0}
+.item button{width:40px}
 </style>
 </head>
 <body>
-<h1>Shabby Drinkomedy</h1>
+<h1>🍺 Drinkomedy Cilento</h1>
 
-<label>Prodotto</label>
-<select id="item-select" required>
-  <option value="">-- Seleziona --</option>
-  <option selected>articolo bar generico (scrivi tu)</option>
-  <option>Pinta bionda</option>
-  <option>Pinta rossa</option>
-  <option>1/2 pinta Bionda</option>
-  <option>1/2 pinta Rossa</option>
-  <option>Ipa Cylent Spina (solo33cl)</option>
-  <option>Gin tonic</option>
-  <option>Gin lemon</option>
-  <option>Vodka tonic</option>
-  <option>Vodka lemon</option>
-  <option>Birre in bottiglia/lattina (specificare nelle note)</option>
-  <option>Moscow mule</option>
-  <option>Acqua naturale</option>
-  <option>Acqua frizzante</option>
-  <option>Bibite (Coca,Fanta...)</option>
-  <option>Spritz (nelle note scrivi il gusto)</option>
-  <option>Negroni</option>
-</select>
+<div class="card">
+<label>Tavolo / Nome Cliente</label>
+<input id="tavolo" placeholder="Es. Tavolo 5 o Mario">
+</div>
 
-<label>Quantità</label>
-<input type="number" id="qty" value="1" min="1">
+<div class="card">
+<label>Articolo bar generico (scrivi tu)</label>
+<input id="generico" placeholder="Es. 2 spritz, 1 caffè">
+</div>
 
-<label>Note</label>
-<textarea id="note" placeholder="Scrivi qui i dettagli..."></textarea>
+<div class="card" id="lista">
+<h3>Birre alla spina</h3>
+<div class="item"><span>Pinta Bionda</span><div><button onclick="chg('bionda',-1)">-</button><span id="bionda">0</span><button onclick="chg('bionda',1)">+</button></div></div>
+<div class="item"><span>Pinta Rossa</span><div><button onclick="chg('rossa',-1)">-</button><span id="rossa">0</span><button onclick="chg('rossa',1)">+</button></div></div>
+<div class="item"><span>Pinta Bianca</span><div><button onclick="chg('bianca',-1)">-</button><span id="bianca">0</span><button onclick="chg('bianca',1)">+</button></div></div>
+</div>
 
-<button onclick="aggiungi()">Aggiungi</button>
-
-<div id="lista"></div>
-<button onclick="inviaWhatsApp()" style="background:#25D366">Invia ordine su WhatsApp</button>
+<div class="card">
+<button onclick="invia()">INVIA ORDINE SU TELEGRAM</button>
+<p id="stato" style="text-align:center;margin-top:10px"></p>
+</div>
 
 <script>
-let ordine = [];
-function aggiungi(){
-  const prod = document.getElementById('item-select').value;
-  const qty = document.getElementById('qty').value;
-  const note = document.getElementById('note').value;
-  if(!prod){alert('Seleziona un prodotto');return;}
-  ordine.push({prod,qty,note});
-  mostra();
-  document.getElementById('note').value='';
-}
-function mostra(){
-  const div = document.getElementById('lista');
-  div.innerHTML = '<b>Ordine:</b><br>' + ordine.map((o,i)=>`<div class="riga"><span>${o.qty}x ${o.prod} ${o.note? '('+o.note+')':''}</span><span onclick="ordine.splice(${i},1);mostra()" style="color:red">X</span></div>`).join('');
-}
-function inviaWhatsApp(){
-  if(ordine.length==0){alert('Ordine vuoto');return;}
-  let testo = 'ORDINE SHABBY:%0A' + ordine.map(o=>`-${o.qty}x ${o.prod} ${o.note? '('+o.note+')':''}`).join('%0A');
-  window.open('https://wa.me/?text='+testo,'_blank');
+const TOKEN="9138005946:AAH73KjnovdpkiTY7l2vlTa5hOh3me11Ui0";
+const CHAT_ID="-1004443351538";
+let q={bionda:0,rossa:0,bianca:0};
+function chg(k,d){q[k]=Math.max(0,q[k]+d);document.getElementById(k).innerText=q[k]}
+async function invia(){
+ let tavolo=document.getElementById('tavolo').value||'Non specificato';
+ let gen=document.getElementById('generico').value||'';
+ let msg=`🍺 NUOVO ORDINE DRINKOMEDY\n\n📍 ${tavolo}\n`;
+ if(gen) msg+=`📝 Generico: ${gen}\n`;
+ msg+=`\n---\n`;
+ if(q.bionda>0) msg+=`Pinta Bionda: ${q.bionda}\n`;
+ if(q.rossa>0) msg+=`Pinta Rossa: ${q.rossa}\n`;
+ if(q.bianca>0) msg+=`Pinta Bianca: ${q.bianca}\n`;
+ if(q.bionda+q.rossa+q.bianca==0 && !gen){alert('Aggiungi qualcosa!');return}
+ document.getElementById('stato').innerText='Invio in corso...';
+ try{
+  let res=await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`,{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({chat_id:CHAT_ID,text:msg})
+  });
+  let data=await res.json();
+  if(data.ok){document.getElementById('stato').innerText='✅ Ordine inviato su Telegram!'; q={bionda:0,rossa:0,bianca:0};['bionda','rossa','bianca'].forEach(k=>document.getElementById(k).innerText=0)}
+  else{document.getElementById('stato').innerText='Errore: '+JSON.stringify(data)}
+ }catch(e){document.getElementById('stato').innerText='Errore di rete'}
 }
 </script>
 </body>
